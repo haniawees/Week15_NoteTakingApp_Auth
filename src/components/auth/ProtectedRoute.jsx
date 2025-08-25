@@ -2,10 +2,10 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const ProtectedRoute = ({ children, requireAuth }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.auth);
+  const { isAuthenticated, loading , status } = useSelector((state) => state.auth);
 
   // Show loading state while checking authentication
-  if (loading) {
+  if ( status ===  "loading") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
@@ -17,12 +17,19 @@ const ProtectedRoute = ({ children, requireAuth }) => {
   }
 
   // TODO: If route requires authentication and user is not authenticated, redirect to login
+  if( requireAuth && !isAuthenticated) {
+    return <Navigate to ="/login" replace/>;
+  }
  
 
   //TODO: If route requires unauthenticated user and user is authenticated, redirect to notes
+  if (!requireAuth && isAuthenticated) {
+    return <Navigate to="/notes" replace />;
 
+  }
 
   // Otherwise, render the children
+  
   return children;
 };
 

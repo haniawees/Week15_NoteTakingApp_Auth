@@ -34,7 +34,8 @@ const Navbar = () => {
           </Link>
 
           <div className="flex gap-4">
-       
+            {isAuthenticated ? (
+              <>
                 <Link
                   to="/"
                   className={`flex items-center gap-1 px-3 py-2 rounded-md transition-colors ${
@@ -66,8 +67,9 @@ const Navbar = () => {
                   <LogOut size={18} />
                   <span>Logout</span>
                 </button>
- 
-      
+              </>
+            ) : (
+              <>
                 <Link
                   to="/login"
                   className={`flex items-center gap-1 px-3 py-2 rounded-md transition-colors ${
@@ -91,7 +93,8 @@ const Navbar = () => {
                   <UserPlus size={18} />
                   <span>Register</span>
                 </Link>
-     
+              </>
+            )}
           </div>
         </nav>
       </div>

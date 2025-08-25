@@ -1,4 +1,38 @@
-const Login = () => {
+import ract from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {z} from "zod";
+import { useNavigate } from 'react-router-dom';
+import {useDispatch, useSelector} from 'react-redux';
+import { login  } from "../store/slices/authSlice.js";
+import { loginSchema } from '../schema/authSchema.js';
+
+
+const Login =() =>{
+
+ const dispatch = useDispatch();
+ const navigate = useNavigate();
+ const {status, error } = useSelector((state) => state.auth)
+
+
+ const {
+  register ,
+  handleSubmit,
+  formState:{errors},
+ } =useForm({
+  resolver: zodResolver(loginSchema),
+ });
+
+  const onLogin = async (data) => {
+    try{
+      await dispatch(login(data)).unwrap();
+      navigate("/notes");
+    } catch(error) {
+      console.log("failed to login", error);
+    }
+  }
+
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -6,7 +40,7 @@ const Login = () => {
           Login to Your Account
         </h2>
 
-        <form className="space-y-4">
+        <form  onSubmit = {handleSubmit (onLogin)}className="space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -17,6 +51,7 @@ const Login = () => {
             <input
               type="email"
               id="email"
+              {...register("email")}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
               placeholder="Enter your email"
             />
@@ -32,6 +67,7 @@ const Login = () => {
             <input
               type="password"
               id="password"
+              {...register("password")}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500"
               placeholder="Enter your password"
             />
@@ -54,6 +90,6 @@ const Login = () => {
       </div>
     </div>
   );
-};
 
+}
 export default Login;

@@ -9,17 +9,35 @@ axios.defaults.withCredentials = true;
 export const checkAuthStatus = createAsyncThunk(
   "auth/checkStatus",
   async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/auth/check`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Session expired");
+    }
+  }
+);
+
+
+    
     // TODO: Implement authentication status check
     // 1. Make a GET request to /auth/check
     // 2. Return the response data
     // 3. Handle errors appropriately
-  }
-);
+  
+
 
 // TODO: Implement login thunk
 export const login = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/auth/login`, credentials);
+      return response.data;
+    } catch (error) {
+      // Handle error appropriately
+      return rejectWithValue(error.response.data);
+    }
     // TODO: Implement login functionality
     // 1. Make a POST request to /auth/login with credentials
     // 2. Return the response data
@@ -28,13 +46,20 @@ export const login = createAsyncThunk(
 );
 
 // TODO: Implement register thunk
-export const register = createAsyncThunk(
+export const registers = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
-    // TODO: Implement registration functionality
-    // 1. Make a POST request to /auth/register with userData
-    // 2. Return the response data
-    // 3. Handle errors appropriately
+      try {
+      const response = await axios.post(`${BASE_URL}/auth/register`, userData);
+
+      console.log("response",response)
+      return response.data;
+      
+    } catch (error) {
+      
+      return rejectWithValue(error.response.data);
+    }
+
   }
 );
 
@@ -42,6 +67,14 @@ export const register = createAsyncThunk(
 export const logout = createAsyncThunk(
   "auth/logout",
   async (_, { rejectWithValue }) => {
+  try {
+      await axios.post(`${BASE_URL}/auth/logout`);
+      return true
+    } catch (error) {
+      // Handle error appropriately
+      return rejectWithValue(error.response.data);
+      
+    }
     // TODO: Implement logout functionality
     // 1. Make a POST request to /auth/logout
     // 2. Handle errors appropriately
@@ -64,13 +97,74 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder;
-    // TODO: Add cases for checkAuthStatus
-    // TODO: Add cases for login
-    // TODO: Add cases for register
-    // TODO: Add cases for logout
-  },
-});
+    builder
+     .addCase(checkAuthStatus.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkAuthStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(checkAuthStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = action.payload;
+      })
 
-export const { clearError } = authSlice.actions;
+      // ✅ login
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.error = null;
+
+
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = null;
+        state.error = action.payload;
+      })
+
+      // ✅ register
+      .addCase(registers.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(registers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = action.payload.user;
+        state.error = null;
+      })
+      .addCase(registers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // ✅ logout
+      .addCase(logout.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = null;
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+  }
+    // TODO: Add cases for checkAuthStatus
+  });
+  
+   export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
